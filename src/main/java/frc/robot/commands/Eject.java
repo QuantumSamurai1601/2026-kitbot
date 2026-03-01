@@ -15,9 +15,9 @@ public class Eject extends Command {
 
   ShooterSubsystem fuelSubsystem;
 
-  public Eject(ShooterSubsystem fuelSubsystem) {
-    addRequirements(fuelSubsystem);
-    this.fuelSubsystem = fuelSubsystem;
+  public Eject(ShooterSubsystem fuelSystem) {
+    addRequirements(fuelSystem);
+    this.fuelSubsystem = fuelSystem;
   }
 
   // Called when the command is initially scheduled. Set the rollers to the
