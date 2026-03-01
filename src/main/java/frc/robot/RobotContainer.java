@@ -31,6 +31,21 @@ import frc.robot.TunerConstants;
  */
 public class RobotContainer {
 
+  // The robot's subsystems
+  public final CommandSwerveDrivetrain driveSubsystem = TunerConstants.createDrivetrain();
+  private final ShooterSubsystem fuelSubsystem = new ShooterSubsystem();
+
+  // The driver's controller
+  private final CommandXboxController driverController = new CommandXboxController(
+      DRIVER_CONTROLLER_PORT);
+
+  // The operator's controller
+  private final CommandXboxController operatorController = new CommandXboxController(
+      OPERATOR_CONTROLLER_PORT);
+
+  // The autonomous chooser
+  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+
   private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -42,21 +57,6 @@ public class RobotContainer {
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-  // The driver's controller
-  private final CommandXboxController driverController = new CommandXboxController(
-      DRIVER_CONTROLLER_PORT);
-
-  // The operator's controller
-  private final CommandXboxController operatorController = new CommandXboxController(
-      OPERATOR_CONTROLLER_PORT);
-
-  // The robot's subsystems
-  public final CommandSwerveDrivetrain driveSubsystem = TunerConstants.createDrivetrain();
-  private final ShooterSubsystem fuelSubsystem = new ShooterSubsystem();
-
-  // The autonomous chooser
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
