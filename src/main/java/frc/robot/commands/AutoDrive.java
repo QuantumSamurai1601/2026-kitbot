@@ -4,21 +4,27 @@
 
 package frc.robot.commands;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.CANDriveSubsystem;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class AutoDrive extends Command {
   /** Creates a new Drive. */
-  CANDriveSubsystem driveSubsystem;
+  CommandSwerveDrivetrain driveSubsystem;
   double xSpeed, zRotation;
+  private final SwerveRequest.RobotCentric autoRequest = new SwerveRequest.RobotCentric()
+    .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-  public AutoDrive(CANDriveSubsystem driveSystem, double xSpeed, double zRotation) {
+  public AutoDrive(CommandSwerveDrivetrain driveSystem, double xSpeed, double zRotation) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveSystem);
     driveSubsystem = driveSystem;
     this.xSpeed = xSpeed;
     this.zRotation = zRotation;
+    
   }
 
   // Called when the command is initially scheduled.
@@ -31,13 +37,21 @@ public class AutoDrive extends Command {
   // arcade drive object
   @Override
   public void execute() {
-    driveSubsystem.driveArcade(xSpeed, zRotation);
+    driveSubsystem.applyRequest(() ->
+        autoRequest.withVelocityX(xSpeed)   // m/s forward
+                   .withVelocityY(0)
+                   .withRotationalRate(zRotation)
+    ).withTimeout(2.0);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    driveSubsystem.driveArcade(0, 0);
+    driveSubsystem.applyRequest(() ->
+        autoRequest.withVelocityX(0)   // m/s forward
+                   .withVelocityY(0)
+                   .withRotationalRate(0)
+    );
   }
 
   // Returns true when the command should end.
