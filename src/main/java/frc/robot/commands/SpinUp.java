@@ -15,9 +15,9 @@ public class SpinUp extends Command {
 
   ShooterSubsystem fuelSubsystem;
 
-  public SpinUp(ShooterSubsystem fuelSubsystem) {
-    addRequirements(fuelSubsystem);
-    this.fuelSubsystem = fuelSubsystem;
+  public SpinUp(ShooterSubsystem fuelSystem) {
+    addRequirements(fuelSystem);
+    this.fuelSubsystem = fuelSystem;
   }
 
   // Called when the command is initially scheduled. Set the rollers to the
