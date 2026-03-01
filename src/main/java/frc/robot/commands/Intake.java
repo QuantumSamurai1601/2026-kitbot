@@ -15,9 +15,9 @@ public class Intake extends Command {
 
   ShooterSubsystem fuelSubsystem;
 
-  public Intake(ShooterSubsystem fuelSubsystem) {
-    addRequirements(fuelSubsystem);
-    this.fuelSubsystem = fuelSubsystem;
+  public Intake(ShooterSubsystem fuelSystem) {
+    addRequirements(fuelSystem);
+    this.fuelSubsystem = fuelSystem;
   }
 
   // Called when the command is initially scheduled. Set the rollers to the
