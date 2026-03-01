@@ -13,7 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class AutoDrive extends Command {
   /** Creates a new Drive. */
-  CommandSwerveDrivetrain drivetrain;
+  CommandSwerveDrivetrain driveSubsystem;
   double xSpeed, zRotation;
   private final SwerveRequest.RobotCentric autoRequest = new SwerveRequest.RobotCentric()
     .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
@@ -21,7 +21,7 @@ public class AutoDrive extends Command {
   public AutoDrive(CommandSwerveDrivetrain driveSystem, double xSpeed, double zRotation) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveSystem);
-    drivetrain = driveSystem;
+    driveSubsystem = driveSystem;
     this.xSpeed = xSpeed;
     this.zRotation = zRotation;
     
@@ -37,7 +37,7 @@ public class AutoDrive extends Command {
   // arcade drive object
   @Override
   public void execute() {
-    drivetrain.applyRequest(() ->
+    driveSubsystem.applyRequest(() ->
         autoRequest.withVelocityX(xSpeed)   // m/s forward
                    .withVelocityY(0)
                    .withRotationalRate(zRotation)
@@ -47,7 +47,7 @@ public class AutoDrive extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    drivetrain.applyRequest(() ->
+    driveSubsystem.applyRequest(() ->
         autoRequest.withVelocityX(0)   // m/s forward
                    .withVelocityY(0)
                    .withRotationalRate(0)

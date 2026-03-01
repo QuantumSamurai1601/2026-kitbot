@@ -13,21 +13,21 @@ import static frc.robot.Constants.ShooterConstants.*;
 public class Eject extends Command {
   /** Creates a new Intake. */
 
-  ShooterSubsystem shooterSubsystem;
+  ShooterSubsystem fuelSubsystem;
 
-  public Eject(ShooterSubsystem shooterSubsystem) {
-    addRequirements(shooterSubsystem);
-    this.shooterSubsystem = shooterSubsystem;
+  public Eject(ShooterSubsystem fuelSubsystem) {
+    addRequirements(fuelSubsystem);
+    this.fuelSubsystem = fuelSubsystem;
   }
 
   // Called when the command is initially scheduled. Set the rollers to the
   // appropriate values for ejecting
   @Override
   public void initialize() {
-    shooterSubsystem
+    fuelSubsystem
         .setIntakeLauncherRoller(
             -1 * SmartDashboard.getNumber("Intaking intake roller value", INTAKING_INTAKE_RPS));
-    shooterSubsystem
+    fuelSubsystem
         .setFeederRoller(-1 * SmartDashboard.getNumber("Intaking feeder roller value", INTAKING_FEEDER_RPS));
   }
 
@@ -40,8 +40,8 @@ public class Eject extends Command {
   // Called once the command ends or is interrupted. Stop the rollers
   @Override
   public void end(boolean interrupted) {
-    shooterSubsystem.setIntakeLauncherRoller(0);
-    shooterSubsystem.setFeederRoller(0);
+    fuelSubsystem.setIntakeLauncherRoller(0);
+    fuelSubsystem.setFeederRoller(0);
   }
 
   // Returns true when the command should end.

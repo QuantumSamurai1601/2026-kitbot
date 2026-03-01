@@ -13,11 +13,11 @@ import frc.robot.subsystems.ShooterSubsystem;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class LaunchSequence extends SequentialCommandGroup {
   /** Creates a new LaunchSequence. */
-  public LaunchSequence(ShooterSubsystem shooterSubsystem) {
+  public LaunchSequence(ShooterSubsystem fuelSubsystem) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-        new SpinUp(shooterSubsystem).withTimeout(ShooterConstants.SPIN_UP_SECONDS),
-        new Launch(shooterSubsystem));
+        new SpinUp(fuelSubsystem).withTimeout(ShooterConstants.SPIN_UP_SECONDS),
+        new Launch(fuelSubsystem));
   }
 }

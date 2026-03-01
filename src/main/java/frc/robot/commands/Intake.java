@@ -13,20 +13,20 @@ import static frc.robot.Constants.ShooterConstants.*;
 public class Intake extends Command {
   /** Creates a new Intake. */
 
-  ShooterSubsystem shooterSubsystem;
+  ShooterSubsystem fuelSubsystem;
 
-  public Intake(ShooterSubsystem shooterSubsystem) {
-    addRequirements(shooterSubsystem);
-    this.shooterSubsystem = shooterSubsystem;
+  public Intake(ShooterSubsystem fuelSubsystem) {
+    addRequirements(fuelSubsystem);
+    this.fuelSubsystem = fuelSubsystem;
   }
 
   // Called when the command is initially scheduled. Set the rollers to the
   // appropriate values for intaking
   @Override
   public void initialize() {
-    shooterSubsystem
+    fuelSubsystem
         .setIntakeLauncherRoller(SmartDashboard.getNumber("Intaking intake roller value", INTAKING_INTAKE_RPS));
-    shooterSubsystem.setFeederRoller(SmartDashboard.getNumber("Intaking feeder roller value", INTAKING_FEEDER_RPS));
+    fuelSubsystem.setFeederRoller(SmartDashboard.getNumber("Intaking feeder roller value", INTAKING_FEEDER_RPS));
   }
 
   // Called every time the scheduler runs while the command is scheduled. This
@@ -38,8 +38,8 @@ public class Intake extends Command {
   // Called once the command ends or is interrupted. Stop the rollers
   @Override
   public void end(boolean interrupted) {
-    shooterSubsystem.setIntakeLauncherRoller(0);
-    shooterSubsystem.setFeederRoller(0);
+    fuelSubsystem.setIntakeLauncherRoller(0);
+    fuelSubsystem.setFeederRoller(0);
   }
 
   // Returns true when the command should end.

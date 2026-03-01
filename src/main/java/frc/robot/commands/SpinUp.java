@@ -13,21 +13,21 @@ import static frc.robot.Constants.ShooterConstants.*;
 public class SpinUp extends Command {
   /** Creates a new Intake. */
 
-  ShooterSubsystem shooterSubsystem;
+  ShooterSubsystem fuelSubsystem;
 
-  public SpinUp(ShooterSubsystem shooterSubsystem) {
-    addRequirements(shooterSubsystem);
-    this.shooterSubsystem = shooterSubsystem;
+  public SpinUp(ShooterSubsystem fuelSubsystem) {
+    addRequirements(fuelSubsystem);
+    this.fuelSubsystem = fuelSubsystem;
   }
 
   // Called when the command is initially scheduled. Set the rollers to the
   // appropriate values for intaking
   @Override
   public void initialize() {
-    shooterSubsystem
+    fuelSubsystem
         .setIntakeLauncherRoller(
             SmartDashboard.getNumber("Launching launcher roller value", LAUNCHING_LAUNCHER_RPS));
-    shooterSubsystem.setFeederRoller(SmartDashboard.getNumber("Launching spin-up feeder value", SPIN_UP_FEEDER_RPS));
+    fuelSubsystem.setFeederRoller(SmartDashboard.getNumber("Launching spin-up feeder value", SPIN_UP_FEEDER_RPS));
   }
 
   // Called every time the scheduler runs while the command is scheduled. This
