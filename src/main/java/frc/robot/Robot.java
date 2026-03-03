@@ -20,6 +20,13 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * project.
  */
 public class Robot extends TimedRobot {
+     private static final CANBus kCANBus = new CANBus("canivore");
+
+   private final TalonFX m_leftLeader = new TalonFX(0, kCANBus);
+   private final TalonFX m_rightLeader = new TalonFX(1, kCANBus);
+   private final TalonFX m_leftFollower = new TalonFX(2, kCANBus);
+   private final TalonFX m_rightFollower = new TalonFX(3, kCANBus);
+  
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -105,6 +112,14 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
   }
+var fwd = -m_driverJoy.getLeftY();
+      var rot = m_driverJoy.getRightX();
+
+    m_leftOut.Output = fwd + rot;
+      m_rightOut.Output = fwd - rot;
+
+  m_leftLeader.setControl(m_leftOut);
+      m_rightLeader.setControl(m_rightOut);
 
   @Override
   public void testInit() {
@@ -127,3 +142,4 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 }
+
