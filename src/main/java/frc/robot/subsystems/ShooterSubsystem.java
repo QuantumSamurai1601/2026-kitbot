@@ -68,9 +68,18 @@ public class ShooterSubsystem extends SubsystemBase {
     private void configureMotors() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
+        currentConfigs.Inverted = InvertedValue.CounterClockwise_Positive;
+      m_leftLeader.getConfigurator().apply(currentConfigs);
+
+        currentConfigs.Inverted = InvertedValue.Clockwise_Positive;
+      m_rightLeader.getConfigurator().apply(currentConfigs);
+        
         // Coast in neutral so flywheel can decelerate freely when not shooting
         config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
+          m_leftFollower.setControl(new Follower(m_leftLeader.getDeviceID(), MotorAlignmentValue.Aligned));
+      m_rightFollower.setControl(new Follower(m_rightLeader.getDeviceID(), MotorAlignmentValue.Aligned));
+        
         // Supply current limit to protect wiring
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit       = 60.0;
