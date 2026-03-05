@@ -26,7 +26,7 @@ public class Intake extends Command {
   public void initialize() {
     fuelSubsystem
         .setIntakeLauncherRoller(INTAKE_VOLTAGE);
-    fuelSubsystem.setFeederRoller(FEEDER_VOLTAGE);
+    fuelSubsystem.setFeederRoller(INTAKE_VOLTAGE);
   }
 
   // Called every time the scheduler runs while the command is scheduled. This

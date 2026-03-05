@@ -64,8 +64,8 @@ public class ShooterSubsystem extends SubsystemBase {
     // Constructor
     // ---------------------------------------------------------------
     public ShooterSubsystem() {
-        intakeLauncherRoller  = new TalonFX(ShooterConstants.kLeftShooterMotorId, "rio");
-        feederRoller = new TalonFX(ShooterConstants.kRightShooterMotorId, "rio");
+        intakeLauncherRoller  = new TalonFX(ShooterConstants.kLeftShooterMotorId, ShooterConstants.kShooterCANBus.getName());
+        feederRoller = new TalonFX(ShooterConstants.kRightShooterMotorId, ShooterConstants.kShooterCANBus.getName());
         configureMotors();
     }
 

@@ -27,7 +27,7 @@ public class Eject extends Command {
     fuelSubsystem
         .setIntakeLauncherRoller(-INTAKE_VOLTAGE);
     fuelSubsystem
-        .setFeederRoller(-FEEDER_VOLTAGE);
+        .setFeederRoller(-INTAKE_VOLTAGE);
   }
 
   // Called every time the scheduler runs while the command is scheduled. This
