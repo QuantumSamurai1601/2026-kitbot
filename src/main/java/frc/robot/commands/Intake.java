@@ -25,8 +25,8 @@ public class Intake extends Command {
   @Override
   public void initialize() {
     fuelSubsystem
-        .setIntakeLauncherRoller(6.7);
-    fuelSubsystem.setFeederRoller(6.7);
+        .setIntakeLauncherRoller(INTAKE_VOLTAGE);
+    fuelSubsystem.setFeederRoller(FEEDER_VOLTAGE);
   }
 
   // Called every time the scheduler runs while the command is scheduled. This
