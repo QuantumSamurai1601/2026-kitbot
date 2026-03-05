@@ -25,7 +25,7 @@ public class Eject extends Command {
   @Override
   public void initialize() {
     fuelSubsystem
-        .setIntakeLauncherRoller(-6.7);
+        .setIntakeLauncherRoller(-INTAKE_VOLTAGE);
     fuelSubsystem
         .setFeederRoller(-6.7);
   }
