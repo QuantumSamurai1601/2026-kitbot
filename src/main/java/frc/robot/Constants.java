@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.CANBus;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean constants. This class should not be used for any other
@@ -51,6 +53,10 @@ public final class Constants {
     public static final double LAUNCHING_FEEDER_VOLTAGE = 9;
     public static final double LAUNCHING_LAUNCHER_VOLTAGE = 10.6;
     public static final double SPIN_UP_FEEDER_VOLTAGE = -6;
+
+    public static final double INTAKE_VOLTAGE = 6.7;
+    public static final CANBus kShooterCANBus = new CANBus("rio");
+
   }
 
   public static final class OperatorConstants {

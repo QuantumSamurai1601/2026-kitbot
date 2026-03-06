@@ -3,12 +3,21 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -44,30 +53,37 @@ public class RobotContainer {
       OPERATOR_CONTROLLER_PORT);
 
   // The autonomous chooser
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  private final SendableChooser<Command> autoChooser;
 
-  private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-  private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+  private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top
+                                                                                      // speed
+  private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max
+                                                                                    // angular velocity
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-          .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+      .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+      .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
-          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+      .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    NamedCommands.registerCommand("intake", new InstantCommand(() -> fuelSubsystem.setSpeed(8, 12)));
+    NamedCommands.registerCommand("shoot", new InstantCommand(() -> fuelSubsystem.setSpeed(7.8, -9)));
+
     configureBindings();
 
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with
     // autoChooser.addOption
-    autoChooser.setDefaultOption("Autonomous", new ExampleAuto(driveSubsystem, fuelSubsystem));
+    autoChooser = AutoBuilder.buildAutoChooser("midPickScoreAuto");
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+
   }
 
   /**
@@ -84,57 +100,64 @@ public class RobotContainer {
   private void configureBindings() {
 
     // While the left bumper on operator controller is held, intake Fuel
-    operatorController.leftBumper().whileTrue(new Intake(fuelSubsystem));
+    // driverController.leftBumper().whileTrue(new Intake(fuelSubsystem));
     // While the right bumper on the operator controller is held, spin up for 1
     // second, then launch fuel. When the button is released, stop.
-    operatorController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
+    driverController.rightBumper().whileTrue(fuelSubsystem.run(() -> fuelSubsystem.setSpeed(7.8, -9)));
     // While the A button is held on the operator controller, eject fuel back out
     // the intake
-    operatorController.a().whileTrue(new Eject(fuelSubsystem));
+    driverController.a().whileTrue(new Eject(fuelSubsystem));
 
     // Set the default command for the drive subsystem to the command provided by
     // factory with the values provided by the joystick axes on the driver
     // controller. The Y axis of the controller is inverted so that pushing the
     // stick away from you (a negative value) drives the robot forwards (a positive
     // value)
-    fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
+    fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.setSpeed(8, 12)));
 
     driveSubsystem.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        driveSubsystem.applyRequest(() ->
-            drive.withVelocityX(-driverController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                .withVelocityY(-driverController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                .withRotationalRate(-driverController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+        driveSubsystem.applyRequest(() -> drive.withVelocityX(-driverController.getLeftY() * MaxSpeed) // Drive forward
+                                                                                                       // with negative
+                                                                                                       // Y (forward)
+            .withVelocityY(-driverController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+            .withRotationalRate(-driverController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative
+                                                                                // X (left)
         )
     );
     // Idle while the robot is disabled. This ensures the configured
     // neutral mode is applied to the drive motors while disabled.
     final var idle = new SwerveRequest.Idle();
     RobotModeTriggers.disabled().whileTrue(
-        driveSubsystem.applyRequest(() -> idle).ignoringDisable(true)
-    );
+        driveSubsystem.applyRequest(() -> idle).ignoringDisable(true));
 
     driverController.a().whileTrue(driveSubsystem.applyRequest(() -> brake));
-    driverController.b().whileTrue(driveSubsystem.applyRequest(() ->
-        point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
-    ));
+    driverController.b().whileTrue(driveSubsystem.applyRequest(
+        () -> point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))));
 
-    driverController.povUp().whileTrue(driveSubsystem.applyRequest(() ->
-        forwardStraight.withVelocityX(0.5).withVelocityY(0))
-    );
-    driverController.povDown().whileTrue(driveSubsystem.applyRequest(() ->
-        forwardStraight.withVelocityX(-0.5).withVelocityY(0))
-    );
+    driverController.povUp()
+        .whileTrue(driveSubsystem.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
+    driverController.povDown()
+        .whileTrue(driveSubsystem.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
-    driverController.back().and(driverController.y()).whileTrue(driveSubsystem.sysIdDynamic(Direction.kForward));
-    driverController.back().and(driverController.x()).whileTrue(driveSubsystem.sysIdDynamic(Direction.kReverse));
-    driverController.start().and(driverController.y()).whileTrue(driveSubsystem.sysIdQuasistatic(Direction.kForward));
-    driverController.start().and(driverController.x()).whileTrue(driveSubsystem.sysIdQuasistatic(Direction.kReverse));
+    // driverController.back().and(driverController.y()).whileTrue(driveSubsystem.sysIdDynamic(Direction.kForward));
+    // driverController.back().and(driverController.x()).whileTrue(driveSubsystem.sysIdDynamic(Direction.kReverse));
+    // driverController.start().and(driverController.y()).whileTrue(driveSubsystem.sysIdQuasistatic(Direction.kForward));
+    // driverController.start().and(driverController.x()).whileTrue(driveSubsystem.sysIdQuasistatic(Direction.kReverse));
 
     // Reset the field-centric heading on left bumper press.
     driverController.leftBumper().onTrue(driveSubsystem.runOnce(driveSubsystem::seedFieldCentric));
+
+    new Trigger(ShooterSubsystem::isHubActive)
+      .onTrue(
+        new SequentialCommandGroup(
+          new InstantCommand(() -> driverController.setRumble(RumbleType.kBothRumble, 1.0)),
+          new WaitCommand(1),
+          new InstantCommand(() -> driverController.setRumble(RumbleType.kBothRumble, 0.0))
+        )
+      );
   }
 
   /**
