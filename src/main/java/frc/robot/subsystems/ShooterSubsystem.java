@@ -2,16 +2,21 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -45,6 +50,8 @@ public class ShooterSubsystem extends SubsystemBase {
             .withSlot(0)
             .withEnableFOC(false);   // set true if using Phoenix Pro
 
+    private final VoltageOut m_voltageOut = new VoltageOut(0);
+
     /** Coast both motors (used when idle). */
     private final NeutralOut m_coastRequest = new NeutralOut();
 
@@ -57,8 +64,8 @@ public class ShooterSubsystem extends SubsystemBase {
     // Constructor
     // ---------------------------------------------------------------
     public ShooterSubsystem() {
-        intakeLauncherRoller  = new TalonFX(ShooterConstants.kLeftShooterMotorId,  TunerConstants.kCANBus.getName());
-        feederRoller = new TalonFX(ShooterConstants.kRightShooterMotorId, TunerConstants.kCANBus.getName());
+        intakeLauncherRoller  = new TalonFX(ShooterConstants.kLeftShooterMotorId, ShooterConstants.kShooterCANBus.getName());
+        feederRoller = new TalonFX(ShooterConstants.kRightShooterMotorId, ShooterConstants.kShooterCANBus.getName());
         configureMotors();
     }
 
@@ -82,7 +89,7 @@ public class ShooterSubsystem extends SubsystemBase {
         
         // Supply current limit to protect wiring
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
-        config.CurrentLimits.SupplyCurrentLimit       = 60.0;
+        config.CurrentLimits.SupplyCurrentLimit       = 20.0;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimit       = 100.0;
 
@@ -107,7 +114,7 @@ public class ShooterSubsystem extends SubsystemBase {
         rightConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         rightConfig.CurrentLimits = config.CurrentLimits;
         rightConfig.Slot0         = config.Slot0;
-        rightConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        rightConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         applyConfig(feederRoller, rightConfig, "Right Shooter");
     }
 
@@ -127,20 +134,19 @@ public class ShooterSubsystem extends SubsystemBase {
      *
      * @param targetRPS Target velocity in rotations per second (positive = shooting direction)
      */
-    public void setSpeed(double targetRPS) {
-        m_targetRPS = targetRPS;
-        intakeLauncherRoller .setControl(m_velocityRequest.withVelocity(targetRPS));
-        feederRoller.setControl(m_velocityRequest.withVelocity(targetRPS));
+    public void setSpeed(double intakeShootVolts, double feedVolts) {
+        intakeLauncherRoller.setControl(m_voltageOut.withOutput(intakeShootVolts));
+        feederRoller.setControl(m_voltageOut.withOutput(feedVolts));
     }
 
     // A method to set the voltage of the intake roller
-    public void setIntakeLauncherRoller(double targetRPS) {
-        intakeLauncherRoller .setControl(m_velocityRequest.withVelocity(targetRPS));
+    public void setIntakeLauncherRoller(double intakeShootVolts) {
+        intakeLauncherRoller.setControl(m_voltageOut.withOutput(intakeShootVolts));
     }
 
     // A method to set the voltage of the intake roller
-    public void setFeederRoller(double targetRPS) {
-        feederRoller.setControl(m_velocityRequest.withVelocity(targetRPS));
+    public void setFeederRoller(double feedVolts) {
+        feederRoller.setControl(m_voltageOut.withOutput(feedVolts));
     }
 
     /** Coast both flywheels (do not apply any output). */
@@ -154,6 +160,65 @@ public class ShooterSubsystem extends SubsystemBase {
         coast();
     }
 
+    public static boolean isHubActive() {
+      Optional<Alliance> alliance = DriverStation.getAlliance();
+      // If we have no alliance, we cannot be enabled, therefore no hub.
+      if (alliance.isEmpty()) {
+        return false;
+      }
+      // Hub is always enabled in autonomous.
+      if (DriverStation.isAutonomousEnabled()) {
+        return true;
+      }
+      // At this point, if we're not teleop enabled, there is no hub.
+      if (!DriverStation.isTeleopEnabled()) {
+        return false;
+      }
+
+      // We're teleop enabled, compute.
+      double matchTime = DriverStation.getMatchTime();
+      String gameData = DriverStation.getGameSpecificMessage();
+      // If we have no game data, we cannot compute, assume hub is active, as its likely early in teleop.
+      if (gameData.isEmpty()) {
+        return true;
+      }
+      boolean redInactiveFirst = false;
+      switch (gameData.charAt(0)) {
+        case 'R' -> redInactiveFirst = true;
+        case 'B' -> redInactiveFirst = false;
+        default -> {
+          // If we have invalid game data, assume hub is active.
+          return true;
+        }
+      }
+
+      // Shift was is active for blue if red won auto, or red if blue won auto.
+      boolean shift1Active = switch (alliance.get()) {
+        case Red -> !redInactiveFirst;
+        case Blue -> redInactiveFirst;
+      };
+
+      if (matchTime > 130) {
+        // Transition shift, hub is active.
+        return true;
+      } else if (matchTime > 105) {
+        // Shift 1
+        return shift1Active;
+      } else if (matchTime > 80) {
+        // Shift 2
+        return !shift1Active;
+      } else if (matchTime > 55) {
+        // Shift 3
+        return shift1Active;
+      } else if (matchTime > 30) {
+        // Shift 4
+        return !shift1Active;
+      } else {
+        // End game, hub always active.
+        return true;
+      }
+    }
+
     // ---------------------------------------------------------------
     // Command factories (inline command pattern)
     // ---------------------------------------------------------------
@@ -162,12 +227,12 @@ public class ShooterSubsystem extends SubsystemBase {
      * Returns a command that spins the shooter at the given RPS and never ends
      * (runs until cancelled / interrupted).
      */
-    public Command spinCommand(double targetRPS) {
-        return runEnd(
-            () -> setSpeed(targetRPS),
-            this::coast
-        );
-    }
+    // public Command spinCommand(double targetRPS) {
+    //     return runEnd(
+    //         () -> setSpeed(targetRPS),
+    //         this::coast
+    //     );
+    // }
 
     /** Coast the shooter (stop shooting). */
     public Command coastCommand() {
@@ -180,10 +245,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Shooter/LeftVelocityRPS",
-            intakeLauncherRoller.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Shooter/RightVelocityRPS",
-            feederRoller.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Shooter/TargetRPS", m_targetRPS);
+        // SmartDashboard.putNumber("Shooter/LeftVelocityRPS",
+        //     intakeLauncherRoller.getVelocity().getValueAsDouble());
+        // SmartDashboard.putNumber("Shooter/RightVelocityRPS",
+        //     feederRoller.getVelocity().getValueAsDouble());
+        // SmartDashboard.putNumber("Shooter/TargetRPS", m_targetRPS);
+      SmartDashboard.putBoolean("Hub Active", isHubActive());
     }
 }
