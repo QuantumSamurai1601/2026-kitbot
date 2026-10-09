@@ -54,7 +54,7 @@ public final class Constants {
     public static final double LAUNCHING_LAUNCHER_VOLTAGE = 10.6;
     public static final double SPIN_UP_FEEDER_VOLTAGE = -6;
 
-    public static final double INTAKE_VOLTAGE = 6.7;
+    public static final double INTAKE_VOLTAGE = -6.7;
     public static final CANBus kShooterCANBus = new CANBus("rio");
 
   }
