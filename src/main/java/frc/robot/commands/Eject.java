@@ -24,10 +24,11 @@ public class Eject extends Command {
   // appropriate values for ejecting
   @Override
   public void initialize() {
-    fuelSubsystem
-        .setIntakeLauncherRoller(-INTAKE_VOLTAGE);
-    fuelSubsystem
-        .setFeederRoller(-INTAKE_VOLTAGE);
+    // fuelSubsystem
+    //     .setIntakeLauncherRoller(-INTAKE_VOLTAGE);
+    // fuelSubsystem
+    //     .setFeederRoller(-INTAKE_VOLTAGE);
+    fuelSubsystem.setSpeed(8, 12);
   }
 
   // Called every time the scheduler runs while the command is scheduled. This

@@ -103,7 +103,7 @@ public class RobotContainer {
     // driverController.leftBumper().whileTrue(new Intake(fuelSubsystem));
     // While the right bumper on the operator controller is held, spin up for 1
     // second, then launch fuel. When the button is released, stop.
-    driverController.rightBumper().whileTrue(fuelSubsystem.run(() -> fuelSubsystem.setSpeed(7.8, -9)));
+    driverController.rightBumper().whileTrue(fuelSubsystem.run(() -> fuelSubsystem.setSpeed(-7.8, 9)));
     // While the A button is held on the operator controller, eject fuel back out
     // the intake
     driverController.a().whileTrue(new Eject(fuelSubsystem));
@@ -113,7 +113,7 @@ public class RobotContainer {
     // controller. The Y axis of the controller is inverted so that pushing the
     // stick away from you (a negative value) drives the robot forwards (a positive
     // value)
-    fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.setSpeed(8, 12)));
+    fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.setSpeed(-8, -12)));
 
     driveSubsystem.setDefaultCommand(
         // Drivetrain will execute this command periodically
