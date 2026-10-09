@@ -143,7 +143,7 @@ public class ShooterSubsystem extends SubsystemBase {
     /** Coast both flywheels (do not apply any output). */
     public void coast() {
         m_targetRPS = 0.0;
-        intakeLauncherRoller .setControl(m_coastRequest);
+        intakeLauncherRoller.setControl(m_coastRequest);
         feederRoller.setControl(m_coastRequest);
     }
 
